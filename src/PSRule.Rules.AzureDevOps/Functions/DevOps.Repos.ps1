@@ -17,7 +17,10 @@ Function Get-AzDevOpsRepos {
     param (
         [Parameter(Mandatory)]
         [string]
-        $Project
+        $Project,
+        [Parameter(Mandatory=$false)]
+        [switch]
+        $IncludeDisabled
     )
     if ($null -eq $script:connection) {
         throw "Not connected to Azure DevOps. Run Connect-AzDevOps first"
@@ -37,7 +40,11 @@ Function Get-AzDevOpsRepos {
     catch {
         throw $_.Exception.Message
     }
-    return @($response.value)
+    # If the IncludeDisabled switch is set, return all repos including disabled ones
+    if ($IncludeDisabled -eq $true) {
+        return @($response.value)
+    }
+    return @($response.value | Where-Object { $_.isDisabled -eq $false })
 }
 Export-ModuleMember -Function Get-AzDevOpsRepos
 # End of Function Get-AzDevOpsRepos
